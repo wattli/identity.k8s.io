@@ -1,0 +1,20 @@
+package: github.com/openshift/identifier
+import:
+- package: github.com/golang/glog
+- package: github.com/spf13/cobra
+  version: 7c674d9e72017ed25f6d2b5e497a1368086b6a6f
+- package: k8s.io/apimachinery
+  subpackages:
+  - pkg/apimachinery/announced
+  - pkg/apimachinery/registered
+  - pkg/apis/meta/v1
+  - pkg/runtime
+  - pkg/runtime/schema
+  - pkg/runtime/serializer
+  - pkg/util/errors
+  - pkg/version
+- package: k8s.io/apiserver
+  subpackages:
+  - pkg/server
+  - pkg/server/options
+  - pkg/util/logs
