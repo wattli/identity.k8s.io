@@ -21,3 +21,6 @@ required = [
 [[constraint]]
   name = "k8s.io/apiserver"
   branch = "release-1.8"
+
+[[constraint]]
+  name = "github.com/square/go-jose"

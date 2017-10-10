@@ -1,3 +1,5 @@
+load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+
 package(default_visibility = ["//visibility:public"])
 
 load(
@@ -18,6 +20,7 @@ go_test(
         "time_test.go",
         "types_test.go",
     ],
+    importpath = "k8s.io/apimachinery/pkg/apis/meta/v1",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/ghodss/yaml:go_default_library",
@@ -50,6 +53,7 @@ go_library(
         "zz_generated.deepcopy.go",
         "zz_generated.defaults.go",
     ],
+    importpath = "k8s.io/apimachinery/pkg/apis/meta/v1",
     deps = [
         "//vendor/github.com/go-openapi/spec:go_default_library",
         "//vendor/github.com/gogo/protobuf/proto:go_default_library",
@@ -90,4 +94,27 @@ filegroup(
     name = "go_default_library_protos",
     srcs = ["generated.proto"],
     visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "v1_proto",
+    srcs = ["generated.proto"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//k8s.io/apimachinery/pkg/runtime:runtime_proto",
+        "//k8s.io/apimachinery/pkg/runtime/schema:schema_proto",
+        "//k8s.io/apimachinery/pkg/util/intstr:intstr_proto",
+    ],
+)
+
+go_proto_library(
+    name = "v1_go_proto",
+    importpath = "k8s.io/apimachinery/pkg/apis/meta/v1",
+    proto = ":v1_proto",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//k8s.io/apimachinery/pkg/util/intstr:go_default_library",
+    ],
 )

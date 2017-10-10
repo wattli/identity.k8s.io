@@ -1,3 +1,5 @@
+load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+
 package(default_visibility = ["//visibility:public"])
 
 load(
@@ -15,6 +17,7 @@ go_test(
         "quantity_test.go",
         "scale_int_test.go",
     ],
+    importpath = "k8s.io/apimachinery/pkg/api/resource",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/google/gofuzz:go_default_library",
@@ -34,6 +37,7 @@ go_library(
         "scale_int.go",
         "suffix.go",
     ],
+    importpath = "k8s.io/apimachinery/pkg/api/resource",
     deps = [
         "//vendor/github.com/go-openapi/spec:go_default_library",
         "//vendor/github.com/gogo/protobuf/proto:go_default_library",
@@ -46,7 +50,8 @@ go_library(
 go_test(
     name = "go_default_xtest",
     srcs = ["quantity_example_test.go"],
-    deps = ["//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library"],
+    importpath = "k8s.io/apimachinery/pkg/api/resource_test",
+    deps = [":go_default_library"],
 )
 
 filegroup(
@@ -66,4 +71,19 @@ filegroup(
     name = "go_default_library_protos",
     srcs = ["generated.proto"],
     visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "resource_proto",
+    srcs = ["generated.proto"],
+    visibility = ["//visibility:public"],
+    deps = ["//k8s.io/apimachinery/pkg/util/intstr:intstr_proto"],
+)
+
+go_proto_library(
+    name = "resource_go_proto",
+    importpath = "k8s.io/apimachinery/pkg/api/resource",
+    proto = ":resource_proto",
+    visibility = ["//visibility:public"],
+    deps = ["//k8s.io/apimachinery/pkg/util/intstr:go_default_library"],
 )

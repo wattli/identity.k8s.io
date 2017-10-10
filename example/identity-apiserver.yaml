@@ -1,0 +1,110 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: identity-apiserver
+  namespace: kube-system
+  labels:
+    run: identity-apiserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: identity-apiserver
+  template:
+    metadata:
+      labels:
+        run: identity-apiserver
+    spec:
+      serviceAccountName: identity-apiserver
+      containers:
+      - image: gcr.io/mikedanese-k8s/identity-apiserver
+        name: identity-apiserver
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: tmpdir
+          mountPath: /tmp
+      volumes:
+      - name: tmpdir
+        hostPath:
+          path: /tmp
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: identity-apiserver-auth-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- kind: ServiceAccount
+  name: identity-apiserver
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: identity-apiserver:system:auth-delegator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: identity-apiserver
+  namespace: kube-system
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: identity-apiserver
+  namespace: kube-system
+---
+apiVersion: apiregistration.k8s.io/v1beta1
+kind: APIService
+metadata:
+  name: v1alpha1.identity.k8s.io
+spec:
+  insecureSkipTLSVerify: true
+  group: identity.k8s.io
+  groupPriorityMinimum: 1000
+  versionPriority: 15
+  service:
+    name: identity-api
+    namespace: kube-system
+  version: v1alpha1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-api
+  namespace: kube-system
+spec:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 443
+  selector:
+    run: identity-apiserver
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: identity-doc-getter
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: identity-doc-getter
+subjects:
+- kind: Group
+  name: system:authenticated
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: identity-doc-getter
+rules:
+- apiGroups: ["identity.k8s.io"]
+  resources: ["identitydocuments"]
+  verbs: ["create"]
