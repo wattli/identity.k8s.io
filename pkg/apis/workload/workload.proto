@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package pkg.apis.workload;
+
+service Workload {
+  rpc GetToken(GetTokenRequest) returns (GetTokenResponse) {
+  }
+
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse) {
+  }
+}
+
+message GetTokenRequest {
+  repeated string audience = 1;
+}
+
+message GetTokenResponse {
+  bytes token = 1;
+  int64 expiration = 2;
+}
+
+message ValidateTokenRequest {
+  repeated string audience = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+}

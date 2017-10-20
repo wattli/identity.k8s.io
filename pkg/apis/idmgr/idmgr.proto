@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package pkg.api;
+package pkg.apis.idmgr;
 
 service Management {
   rpc CreateIdentityVolume(CreateIdentityVolumeRequest)
