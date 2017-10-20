@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	api "k8s.io/identity/pkg/apis/idmgr"
+	"k8s.io/identity/pkg/uds"
 	"k8s.io/identity/pkg/volumemgr"
 
 	"github.com/golang/glog"
@@ -20,12 +21,12 @@ func main() {
 	cmd := &cobra.Command{
 		Short: "Identity manager",
 		RunE: func(c *cobra.Command, args []string) error {
-			s, err := newUnixServer(
+			s, err := uds.New(
 				"/tmp/idmgr.sock",
 				func(s *grpc.Server) {
 					api.RegisterManagementServer(s, &managementServer{})
 				},
-				loggingInterceptor,
+				uds.LoggingInterceptor,
 			)
 			if err != nil {
 				return err
