@@ -11,6 +11,7 @@ import (
 )
 
 type Signer struct {
+	key    *rsa.PrivateKey
 	issuer string
 	s      jose.Signer
 }
@@ -25,6 +26,7 @@ func NewSigner() *Signer {
 		panic(err)
 	}
 	return &Signer{
+		key:    key,
 		issuer: "kubernetes-serviceaccount-authority",
 		s:      sig,
 	}
@@ -47,6 +49,22 @@ func (s *Signer) Sign(c PublicClaims, p PrivateClaims) string {
 		panic(err)
 	}
 	return raw
+}
+
+func (s *Signer) Verify(data string) (*PublicClaims, *PrivateClaims, error) {
+	token, err := jwt.ParseSigned(data)
+	if err != nil {
+		return nil, nil, err
+	}
+	cl := jwt.Claims{}
+	p := &PrivateClaims{}
+	if err := token.Claims(&s.key.PublicKey, &cl, &p); err != nil {
+		return nil, nil, err
+	}
+	if err := cl.Validate(jwt.Expected{Time: time.Now()}); err != nil {
+		return nil, nil, err
+	}
+	return &PublicClaims{Subject: cl.Subject, Audience: cl.Audience}, p, nil
 }
 
 type PublicClaims struct {

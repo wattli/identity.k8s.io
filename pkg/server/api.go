@@ -1,10 +1,13 @@
 package server
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/golang/glog"
 
+	"k8s.io/api/authentication/v1"
 	"k8s.io/apimachinery/pkg/apimachinery/announced"
 	"k8s.io/apimachinery/pkg/apimachinery/registered"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,6 +17,8 @@ import (
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
+	"k8s.io/client-go/kubernetes/scheme"
+
 	"k8s.io/identity/pkg/apis/identity"
 	"k8s.io/identity/pkg/apis/identity/install"
 	"k8s.io/identity/pkg/apis/identity/v1alpha1"
@@ -96,10 +101,55 @@ func (c completedConfig) New() (*Server, error) {
 		GenericAPIServer: genericServer,
 	}
 
+	signer := jwt.NewSigner()
+
 	mux := s.GenericAPIServer.Handler.NonGoRestfulMux
 	mux.Handle("/webhook/authorize", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		glog.V(2).Infof("authorize")
 		w.WriteHeader(401)
+	}))
+	mux.Handle("/webhook/authenticate", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		glog.V(2).Infof("authenticate")
+		if req.Method != "POST" {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		body, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		obj, err := runtime.Decode(scheme.Codecs.UniversalDeserializer(), body)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("unable to decode: %v", err), http.StatusInternalServerError)
+			return
+		}
+		switch t := obj.(type) {
+		case *v1.TokenReview:
+			review := &v1.TokenReview{}
+			if public, private, err := signer.Verify(t.Spec.Token); err != nil {
+				review.Status = v1.TokenReviewStatus{
+					Error: err.Error(),
+				}
+			} else {
+				review.Status = v1.TokenReviewStatus{
+					Authenticated: true,
+					User: v1.UserInfo{
+						Username: public.Subject,
+						Groups:   private.Kubernetes.Groups,
+					},
+				}
+			}
+			data, err := runtime.Encode(scheme.Codecs.SupportedMediaTypes()[0].PrettySerializer, review)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("unable to encode: %v", err), http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			w.Write(data)
+			return
+		}
+		w.WriteHeader(http.StatusUnauthorized)
 	}))
 	mux.Handle("/certs", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(404)
@@ -108,7 +158,7 @@ func (c completedConfig) New() (*Server, error) {
 	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(identity.GroupName, registry, Scheme, metav1.ParameterCodec, Codecs)
 	apiGroupInfo.GroupMeta.GroupVersion = v1alpha1.SchemeGroupVersion
 	v1alpha1storage := map[string]rest.Storage{}
-	v1alpha1storage["identitydocuments"] = identitydocumentstorage.NewREST(jwt.NewSigner())
+	v1alpha1storage["identitydocuments"] = identitydocumentstorage.NewREST(signer)
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
 	if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {
