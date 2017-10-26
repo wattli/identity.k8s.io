@@ -4,37 +4,35 @@ load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 
 go_library(
     name = "go_default_library",
-    srcs = ["idmgr.go"],
-    importpath = "k8s.io/identity/cmd/idmgr",
+    srcs = ["main.go"],
+    importpath = "k8s.io/identity/cmd/idcli",
     visibility = ["//visibility:private"],
     deps = [
-        "//pkg/apis/idmgr:go_default_library",
-        "//pkg/management:go_default_library",
-        "//pkg/uds:go_default_library",
+        "//pkg/apis/workload:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
         "//vendor/google.golang.org/grpc:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/util/logs:go_default_library",
     ],
 )
 
 go_binary(
-    name = "idmgr",
+    name = "idcli",
     gc_linkopts = [
         "-linkmode",
         "external",
         "-extldflags",
         "-static",
     ],
-    importpath = "k8s.io/identity/cmd/idmgr",
+    importpath = "k8s.io/identity/cmd/idcli",
     library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
 
 pkg_tar(
-    name = "idmgr-pkg",
+    name = "idcli-pkg",
     srcs = [
-        ":idmgr",
-        "//cmd/idmgr-driver",
+        ":idcli",
     ],
     package_dir = "usr/local/bin",
     visibility = ["//visibility:private"],
@@ -43,8 +41,8 @@ pkg_tar(
 container_image(
     name = "image",
     base = "@busybox//image",
-    entrypoint = ["/usr/local/bin/idmgr"],
-    tars = [":idmgr-pkg"],
+    entrypoint = ["/usr/local/bin/idcli"],
+    tars = [":idcli-pkg"],
 )
 
 container_push(
@@ -52,6 +50,6 @@ container_push(
     format = "Docker",
     image = ":image",
     registry = "gcr.io",
-    repository = "mikedanese-k8s/idmgr",
+    repository = "mikedanese-k8s/idcli",
     tag = "latest",
 )

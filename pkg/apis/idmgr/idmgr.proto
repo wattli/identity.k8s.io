@@ -14,8 +14,7 @@ service Management {
 
 message CreateIdentityVolumeRequest {
   string mount_path = 1;
-  string service_account = 2;
-  map<string, string> mount_options = 3;
+  PodInfo pod_info = 2;
 }
 
 message CreateIdentityVolumeResponse {
@@ -26,4 +25,16 @@ message DestroyIdentityVolumeRequest {
 }
 
 message DestroyIdentityVolumeResponse {
+}
+
+message PodInfo {
+  string name = 1;
+  string namespace = 2;
+  string uid = 3;
+  string service_account = 4;
+}
+
+message ManagerCheckpoint {
+  string mount_path = 1;
+  PodInfo pod_info = 2;
 }

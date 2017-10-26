@@ -14,14 +14,18 @@ http_archive(
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "e86b8764fccc62dddf6e08382ba692b16479a2af478080b1ece4d9add8abbb9a",
-    strip_prefix = "rules_docker-28d492bc1dc1275e2c6ff74e51adc864e59ddc76",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/28d492bc1dc1275e2c6ff74e51adc864e59ddc76.tar.gz"],
+    sha256 = "2bad6a66735a06756a7abc8974f29f762e314a8c8febfd56f3ceb0ebd1c0d356",
+    strip_prefix = "rules_docker-58d022892232e5d59daba7760289976d5f6e7433",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/58d022892232e5d59daba7760289976d5f6e7433.tar.gz"],
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
 load("@io_bazel_rules_go//proto:def.bzl", "proto_register_toolchains")
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_repositories")
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+    container_repositories = "repositories",
+)
 
 go_rules_dependencies()
 
@@ -29,4 +33,12 @@ go_register_toolchains()
 
 proto_register_toolchains()
 
-docker_repositories()
+container_repositories()
+
+container_pull(
+    name = "busybox",
+    digest = "sha256:be3c11fdba7cfe299214e46edc642e09514dbb9bbefcd0d3836c05a1e0cd0642",
+    registry = "index.docker.io",
+    repository = "library/busybox",
+    tag = "latest",  # ignored, but kept here for documentation
+)

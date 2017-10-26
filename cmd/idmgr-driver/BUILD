@@ -1,5 +1,4 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_build", "docker_push")
 
 go_library(
     name = "go_default_library",
@@ -25,22 +24,5 @@ go_binary(
     ],
     importpath = "k8s.io/identity/cmd/idmgr-driver",
     library = ":go_default_library",
-    visibility = ["//visibility:public"],
-)
-
-docker_build(
-    name = "image",
-    base = "//cmd/true:image",
-    directory = "/flexvolume/k8s~idmgr/",
-    files = [
-        ":idmgr-driver",
-    ],
-)
-
-docker_push(
-    name = "push",
-    image = ":image",
-    registry = "gcr.io",
-    repository = "mikedanese-k8s/idmgr-driver",
-    tag = "latest",
+    visibility = ["//cmd/idmgr:__pkg__"],
 )

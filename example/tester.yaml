@@ -1,12 +1,15 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: nginx-nfs
+  name: idcli
   namespace: default
 spec:
+  nodeName: k-4-minion-group-7mbb
   containers:
-  - name: nginx-nfs
-    image: nginx
+  - name: idcli
+    command: ["sleep", "100000"]
+    image: gcr.io/mikedanese-k8s/idcli
+    imagePullPolicy: Always
     volumeMounts:
     - name: test
       mountPath: /data
@@ -15,7 +18,4 @@ spec:
   volumes:
   - name: test
     flexVolume:
-      driver: "k8s/idmgr"
-      options:
-        server: "172.16.0.25"
-        share: "dws_nas_scratch"
+      driver: "k8s.io/identity"

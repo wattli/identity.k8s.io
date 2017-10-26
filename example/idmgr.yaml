@@ -20,6 +20,8 @@ spec:
             mountPath: /var/lib/kubelet/pods
           - name: tmpdir
             mountPath: /tmp
+          - name: driver
+            mountPath: /volumeplugin/k8s.io~identity
       volumes:
         - name: poddir
           hostPath:
@@ -27,38 +29,6 @@ spec:
         - name: tmpdir
           hostPath:
             path: /tmp
----
-kind: DaemonSet
-apiVersion: extensions/v1beta1
-metadata:
-  name: idmgr-driver-installer
-  namespace: kube-system
-  labels:
-    app: idmgr-driver-installer
-spec:
-  template:
-    metadata:
-      labels:
-        app: idmgr-driver-installer
-    spec:
-      hostPID: true
-      containers:
-        - name: idmgr-driver-installer
-          image: gcr.io/google-containers/startup-script:v1
-          imagePullPolicy: Always
-          securityContext:
-            privileged: true
-          env:
-          - name: SUDO_USER
-            value: "root"
-          - name: STARTUP_SCRIPT
-            value: |
-              #! /bin/bash
-              set -o errexit
-              set -o pipefail
-              set -o nounset
-              cd /home/kubernetes/bin
-              curl -O flexvolume_node_setup.sh https://raw.githubusercontent.com/mikedanese/kubernetes/mounter-fix2/cluster/gce/gci/flexvolume_node_setup.sh
-              chmod +x flexvolume_node_setup.sh
-              mount -t tmpfs -o size=20m tmpfs /root
-              ./flexvolume_node_setup.sh idmgr-driver:latest
+        - name: driver
+          hostPath:
+            path: /tmp/volumeplugin/k8s.io~identity

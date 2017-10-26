@@ -1,15 +1,14 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
+	"io"
 	"os"
-	"sync"
 
 	api "k8s.io/identity/pkg/apis/idmgr"
+	"k8s.io/identity/pkg/management"
 	"k8s.io/identity/pkg/uds"
-	"k8s.io/identity/pkg/volumemgr"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -21,10 +20,15 @@ func main() {
 	cmd := &cobra.Command{
 		Short: "Identity manager",
 		RunE: func(c *cobra.Command, args []string) error {
+
+			if err := setupPluginDir(); err != nil {
+				return fmt.Errorf("failed to setup volume plugin dir: %v", err)
+			}
+
 			s, err := uds.New(
 				"/tmp/idmgr.sock",
 				func(s *grpc.Server) {
-					api.RegisterManagementServer(s, &managementServer{})
+					api.RegisterManagementServer(s, management.NewServer())
 				},
 				uds.LoggingInterceptor,
 			)
@@ -41,15 +45,27 @@ func main() {
 	}
 }
 
-type managementServer struct {
-	sync.Mutex
-	mgrs map[string]volumemgr.Manager
-}
+func setupPluginDir() error {
+	if err := os.MkdirAll("/volumeplugin/k8s.io~identity", 0777); err != nil {
+		return err
+	}
+	fsrc, err := os.Open("/usr/local/bin/idmgr-driver")
+	if err != nil {
+		return err
+	}
+	defer fsrc.Close()
 
-func (ms *managementServer) CreateIdentityVolume(ctx context.Context, in *api.CreateIdentityVolumeRequest) (*api.CreateIdentityVolumeResponse, error) {
-	return &api.CreateIdentityVolumeResponse{}, nil
-}
+	stat, err := fsrc.Stat()
+	if err != nil {
+		return err
+	}
 
-func (s *managementServer) DestroyIdentityVolume(ctx context.Context, in *api.DestroyIdentityVolumeRequest) (*api.DestroyIdentityVolumeResponse, error) {
-	return &api.DestroyIdentityVolumeResponse{}, nil
+	ftrgt, err := os.OpenFile("/volumeplugin/k8s.io~identity/identity", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, stat.Mode())
+	if err != nil {
+		return err
+	}
+	defer ftrgt.Close()
+
+	_, err = io.Copy(ftrgt, fsrc)
+	return err
 }

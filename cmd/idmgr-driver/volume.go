@@ -11,12 +11,11 @@ import (
 	"sync"
 	"time"
 
-	"google.golang.org/grpc"
-
 	api "k8s.io/identity/pkg/apis/idmgr"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc"
 	"k8s.io/apiserver/pkg/util/logs"
 )
 
@@ -97,8 +96,7 @@ func unsupported(out io.Writer, op string) error {
 }
 
 func writeResponse(out io.Writer, status *Status, err error) error {
-	switch {
-	case err != nil:
+	if err != nil {
 		status = &Status{Status: Failure, Message: err.Error()}
 	}
 	body, writeErr := json.Marshal(status)
@@ -150,8 +148,13 @@ func (d *Driver) Init(ctx context.Context) (*Status, error) {
 func (d *Driver) Mount(ctx context.Context, dir string, options MountOptions) (*Status, error) {
 	d.initClient(ctx)
 	d.client.CreateIdentityVolume(ctx, &api.CreateIdentityVolumeRequest{
-		MountPath:    dir,
-		MountOptions: options,
+		MountPath: dir,
+		PodInfo: &api.PodInfo{
+			Name:           options["kubernetes.io/pod.name"],
+			Namespace:      options["kubernetes.io/pod.namespace"],
+			Uid:            options["kubernetes.io/pod.uid"],
+			ServiceAccount: options["kubernetes.io/serviceAccount.name"],
+		},
 	})
 	return &Status{
 		Status:  Success,

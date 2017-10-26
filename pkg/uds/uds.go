@@ -7,7 +7,8 @@ import (
 
 	"github.com/golang/glog"
 	"google.golang.org/grpc"
-	_ "google.golang.org/grpc/health"
+	"google.golang.org/grpc/health"
+	healthapi "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func New(path string, register func(s *grpc.Server), interceptors ...grpc.UnaryServerInterceptor) (*UnixServer, error) {
@@ -17,8 +18,11 @@ func New(path string, register func(s *grpc.Server), interceptors ...grpc.UnaryS
 		return nil, fmt.Errorf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer(grpc.UnaryInterceptor(recursiveInterceptor(interceptors...)))
-	//	healthapi.RegisterHealthServer(s, health.NewServer())
+
 	register(s)
+
+	healthapi.RegisterHealthServer(s, health.NewServer())
+
 	return &UnixServer{lis: lis, server: s}, nil
 }
 
