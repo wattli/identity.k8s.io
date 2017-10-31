@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: idcli
+  name: ubuntu
   namespace: default
 spec:
   nodeName: k-4-minion-group-7mbb
   containers:
-  - name: idcli
+  - name: tester
     command: ["sleep", "100000"]
-    image: gcr.io/mikedanese-k8s/idcli
+    image: ubuntu
     imagePullPolicy: Always
     volumeMounts:
     - name: test

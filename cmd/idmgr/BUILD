@@ -11,6 +11,7 @@ go_library(
         "//pkg/apis/idmgr:go_default_library",
         "//pkg/management:go_default_library",
         "//pkg/uds:go_default_library",
+        "//pkg/util:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
         "//vendor/google.golang.org/grpc:go_default_library",
@@ -34,6 +35,7 @@ pkg_tar(
     name = "idmgr-pkg",
     srcs = [
         ":idmgr",
+        "//cmd/idcli",
         "//cmd/idmgr-driver",
     ],
     package_dir = "usr/local/bin",

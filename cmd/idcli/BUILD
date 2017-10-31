@@ -26,30 +26,5 @@ go_binary(
     ],
     importpath = "k8s.io/identity/cmd/idcli",
     library = ":go_default_library",
-    visibility = ["//visibility:public"],
-)
-
-pkg_tar(
-    name = "idcli-pkg",
-    srcs = [
-        ":idcli",
-    ],
-    package_dir = "usr/local/bin",
-    visibility = ["//visibility:private"],
-)
-
-container_image(
-    name = "image",
-    base = "@busybox//image",
-    entrypoint = ["/usr/local/bin/idcli"],
-    tars = [":idcli-pkg"],
-)
-
-container_push(
-    name = "push",
-    format = "Docker",
-    image = ":image",
-    registry = "gcr.io",
-    repository = "mikedanese-k8s/idcli",
-    tag = "latest",
+    visibility = ["//cmd/idmgr:__pkg__"],
 )

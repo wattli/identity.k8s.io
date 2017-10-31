@@ -12,6 +12,7 @@ go_library(
         "//pkg/apis/idmgr:go_default_library",
         "//pkg/apis/workload:go_default_library",
         "//pkg/uds:go_default_library",
+        "//pkg/util:go_default_library",
         "//pkg/workload:go_default_library",
         "//vendor/google.golang.org/grpc:go_default_library",
     ],

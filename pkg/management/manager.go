@@ -8,6 +8,7 @@ import (
 	mapi "k8s.io/identity/pkg/apis/idmgr"
 	api "k8s.io/identity/pkg/apis/workload"
 	"k8s.io/identity/pkg/uds"
+	"k8s.io/identity/pkg/util"
 	"k8s.io/identity/pkg/workload"
 
 	"google.golang.org/grpc"
@@ -30,6 +31,11 @@ func (m *Manager) Start() error {
 	if err != nil {
 		return err
 	}
+
+	if err := util.CopyFile("/usr/local/bin/idcli", filepath.Join(m.Dir, "idcli")); err != nil {
+		return err
+	}
+
 	m.stop = func() error {
 		s.Stop()
 		os.RemoveAll(m.Dir)

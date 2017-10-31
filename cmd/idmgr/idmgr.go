@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"os"
 
 	api "k8s.io/identity/pkg/apis/idmgr"
 	"k8s.io/identity/pkg/management"
 	"k8s.io/identity/pkg/uds"
+	"k8s.io/identity/pkg/util"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -49,23 +49,5 @@ func setupPluginDir() error {
 	if err := os.MkdirAll("/volumeplugin/k8s.io~identity", 0777); err != nil {
 		return err
 	}
-	fsrc, err := os.Open("/usr/local/bin/idmgr-driver")
-	if err != nil {
-		return err
-	}
-	defer fsrc.Close()
-
-	stat, err := fsrc.Stat()
-	if err != nil {
-		return err
-	}
-
-	ftrgt, err := os.OpenFile("/volumeplugin/k8s.io~identity/identity", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, stat.Mode())
-	if err != nil {
-		return err
-	}
-	defer ftrgt.Close()
-
-	_, err = io.Copy(ftrgt, fsrc)
-	return err
+	return util.CopyFile("/usr/local/bin/idmgr-driver", "/volumeplugin/k8s.io~identity/identity")
 }
