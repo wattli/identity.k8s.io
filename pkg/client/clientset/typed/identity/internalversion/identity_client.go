@@ -17,5 +17,83 @@ limitations under the License.
 package internalversion
 
 import (
+	rest "k8s.io/client-go/rest"
 	"k8s.io/identity/pkg/client/clientset/scheme"
 )
+
+type IdentityInterface interface {
+	RESTClient() rest.Interface
+	IdentityDocumentsGetter
+}
+
+// IdentityClient is used to interact with features provided by the identity.k8s.io group.
+type IdentityClient struct {
+	restClient rest.Interface
+}
+
+func (c *IdentityClient) IdentityDocuments() IdentityDocumentInterface {
+	return newIdentityDocuments(c)
+}
+
+// NewForConfig creates a new IdentityClient for the given config.
+func NewForConfig(c *rest.Config) (*IdentityClient, error) {
+	config := *c
+	if err := setConfigDefaults(&config); err != nil {
+		return nil, err
+	}
+	client, err := rest.RESTClientFor(&config)
+	if err != nil {
+		return nil, err
+	}
+	return &IdentityClient{client}, nil
+}
+
+// NewForConfigOrDie creates a new IdentityClient for the given config and
+// panics if there is an error in the config.
+func NewForConfigOrDie(c *rest.Config) *IdentityClient {
+	client, err := NewForConfig(c)
+	if err != nil {
+		panic(err)
+	}
+	return client
+}
+
+// New creates a new IdentityClient for the given RESTClient.
+func New(c rest.Interface) *IdentityClient {
+	return &IdentityClient{c}
+}
+
+func setConfigDefaults(config *rest.Config) error {
+	g, err := scheme.Registry.Group("identity.k8s.io")
+	if err != nil {
+		return err
+	}
+
+	config.APIPath = "/apis"
+	if config.UserAgent == "" {
+		config.UserAgent = rest.DefaultKubernetesUserAgent()
+	}
+	if config.GroupVersion == nil || config.GroupVersion.Group != g.GroupVersion.Group {
+		gv := g.GroupVersion
+		config.GroupVersion = &gv
+	}
+	config.NegotiatedSerializer = scheme.Codecs
+
+	if config.QPS == 0 {
+		config.QPS = 5
+	}
+	if config.Burst == 0 {
+		config.Burst = 10
+	}
+
+	return nil
+}
+
+// RESTClient returns a RESTClient that is used to communicate
+// with API server by this client implementation.
+func (c *IdentityClient) RESTClient() rest.Interface {
+	if c == nil {
+		return nil
+	}
+	return c.restClient
+}

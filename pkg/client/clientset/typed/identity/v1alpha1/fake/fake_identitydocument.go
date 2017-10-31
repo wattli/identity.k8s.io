@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package internalversion
+package fake
 
-type IdentityDocumentExpansion interface{}
+// FakeIdentityDocuments implements IdentityDocumentInterface
+type FakeIdentityDocuments struct {
+	Fake *FakeIdentityV1alpha1
+}

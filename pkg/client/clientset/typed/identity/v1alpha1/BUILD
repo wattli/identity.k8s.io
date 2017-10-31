@@ -6,8 +6,17 @@ go_library(
         "doc.go",
         "generated_expansion.go",
         "identity_client.go",
+        "identitydocument.go",
     ],
     importpath = "k8s.io/identity/pkg/client/clientset/typed/identity/v1alpha1",
     visibility = ["//visibility:public"],
-    deps = ["//pkg/client/clientset/scheme:go_default_library"],
+    deps = [
+        "//pkg/apis/identity/v1alpha1:go_default_library",
+        "//pkg/client/clientset/scheme:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+    ],
 )

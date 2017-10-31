@@ -17,5 +17,22 @@ limitations under the License.
 package fake
 
 import (
+	rest "k8s.io/client-go/rest"
+	testing "k8s.io/client-go/testing"
 	internalversion "k8s.io/identity/pkg/client/clientset/typed/identity/internalversion"
 )
+
+type FakeIdentity struct {
+	*testing.Fake
+}
+
+func (c *FakeIdentity) IdentityDocuments() internalversion.IdentityDocumentInterface {
+	return &FakeIdentityDocuments{c}
+}
+
+// RESTClient returns a RESTClient that is used to communicate
+// with API server by this client implementation.
+func (c *FakeIdentity) RESTClient() rest.Interface {
+	var ret *rest.RESTClient
+	return ret
+}
