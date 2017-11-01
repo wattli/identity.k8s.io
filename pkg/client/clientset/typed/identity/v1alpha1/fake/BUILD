@@ -10,13 +10,7 @@ go_library(
     importpath = "k8s.io/identity/pkg/client/clientset/typed/identity/v1alpha1/fake",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/apis/identity/v1alpha1:go_default_library",
         "//pkg/client/clientset/typed/identity/v1alpha1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
         "//vendor/k8s.io/client-go/testing:go_default_library",
     ],
