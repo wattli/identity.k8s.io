@@ -53,7 +53,7 @@ func init() {
 }
 
 type ExtraConfig struct {
-	// Place you custom config here.
+	Issuer string
 }
 
 type Config struct {
@@ -102,14 +102,12 @@ func (c completedConfig) New() (*Server, error) {
 		GenericAPIServer: genericServer,
 	}
 
-	issuer := "https://35.202.74.156"
-
-	signer := jwt.NewSigner(issuer)
+	signer := jwt.NewSigner(c.ExtraConfig.Issuer)
 
 	mux := s.GenericAPIServer.Handler.NonGoRestfulMux
 
 	oidcmeta := &oidc.OIDCMeta{
-		Issuer: issuer,
+		Issuer: c.ExtraConfig.Issuer,
 		JWKs:   signer.JWKs(),
 	}
 	if err := oidcmeta.WriteDiscoveryDir("/tmp/oidc"); err != nil {

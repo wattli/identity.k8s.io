@@ -18,6 +18,10 @@ spec:
       serviceAccountName: identity-apiserver
       containers:
       - image: gcr.io/mikedanese-k8s/identity-apiserver
+        command:
+          - /identity-apiserver
+          - --oidc-issuer=https://storage.googleapis.com/mikedanese/oidc
+          - --v=4
         name: identity-apiserver
         imagePullPolicy: Always
         volumeMounts:

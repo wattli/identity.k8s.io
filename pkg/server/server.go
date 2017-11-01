@@ -9,34 +9,8 @@ import (
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	genericapiserver "k8s.io/apiserver/pkg/server"
-	genericoptions "k8s.io/apiserver/pkg/server/options"
 	"k8s.io/identity/pkg/oidc"
 )
-
-type ServerOptions struct {
-	RecommendedOptions *genericoptions.RecommendedOptions
-
-	StdOut io.Writer
-	StdErr io.Writer
-}
-
-func NewServerOptions(out, errOut io.Writer) *ServerOptions {
-	o := &ServerOptions{
-		RecommendedOptions: &genericoptions.RecommendedOptions{
-			SecureServing:  genericoptions.NewSecureServingOptions(),
-			Authentication: genericoptions.NewDelegatingAuthenticationOptions(),
-			Authorization:  genericoptions.NewDelegatingAuthorizationOptions(),
-			Audit:          genericoptions.NewAuditOptions(),
-			Features:       genericoptions.NewFeatureOptions(),
-			CoreAPI:        genericoptions.NewCoreAPIOptions(),
-		},
-
-		StdOut: out,
-		StdErr: errOut,
-	}
-
-	return o
-}
 
 // NewCommandStartServer starts the API server.
 func NewCommandStartServer(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
@@ -60,7 +34,7 @@ func NewCommandStartServer(out, errOut io.Writer, stopCh <-chan struct{}) *cobra
 	}
 
 	flags := cmd.Flags()
-	o.RecommendedOptions.AddFlags(flags)
+	o.AddFlags(flags)
 
 	return cmd
 }
@@ -90,7 +64,9 @@ func (o ServerOptions) Config() (*Config, error) {
 
 	config := &Config{
 		GenericConfig: serverConfig,
-		ExtraConfig:   ExtraConfig{},
+		ExtraConfig: ExtraConfig{
+			Issuer: o.ExtraOptions.Issuer,
+		},
 	}
 	return config, nil
 }

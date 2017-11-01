@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"crypto/ecdsa"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/base64"
@@ -11,24 +12,32 @@ import (
 )
 
 type Signer struct {
-	key    *rsa.PrivateKey
+	key    jose.JSONWebKey
 	issuer string
 	s      jose.Signer
 	alg    jose.SignatureAlgorithm
 }
 
 func NewSigner(issuer string) *Signer {
+
+	keyid := make([]byte, 32)
+	rand.Reader.Read(keyid)
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		panic(err)
 	}
 	alg := jose.RS256
-	sig, err := jose.NewSigner(jose.SigningKey{Algorithm: alg, Key: key}, (&jose.SignerOptions{}).WithType("JWT"))
+	jwk := jose.JSONWebKey{
+		KeyID:     base64.URLEncoding.EncodeToString(keyid),
+		Key:       key,
+		Algorithm: string(alg),
+	}
+	sig, err := jose.NewSigner(jose.SigningKey{Algorithm: alg, Key: jwk}, (&jose.SignerOptions{}).WithType("JWT"))
 	if err != nil {
 		panic(err)
 	}
 	return &Signer{
-		key:    key,
+		key:    jwk,
 		issuer: issuer,
 		s:      sig,
 		alg:    alg,
@@ -64,7 +73,7 @@ func (s *Signer) Verify(data string) (*PublicClaims, *PrivateClaims, error) {
 	}
 	cl := jwt.Claims{}
 	p := &PrivateClaims{}
-	if err := token.Claims(&s.key.PublicKey, &cl, &p); err != nil {
+	if err := token.Claims(&s.key, &cl, &p); err != nil {
 		return nil, nil, err
 	}
 	if err := cl.Validate(jwt.Expected{Time: time.Now()}); err != nil {
@@ -74,13 +83,17 @@ func (s *Signer) Verify(data string) (*PublicClaims, *PrivateClaims, error) {
 }
 
 func (s *Signer) JWKs() jose.JSONWebKeySet {
+	inkey := s.key.Key
+	out := s.key
+	switch inkey.(type) {
+	case *ecdsa.PrivateKey:
+		out.Key = &(inkey.(*ecdsa.PrivateKey).PublicKey)
+	case *rsa.PrivateKey:
+		out.Key = &(inkey.(*rsa.PrivateKey).PublicKey)
+	}
+
 	return jose.JSONWebKeySet{
-		Keys: []jose.JSONWebKey{
-			jose.JSONWebKey{
-				Key:       s.key,
-				Algorithm: string(s.alg),
-			},
-		},
+		Keys: []jose.JSONWebKey{out},
 	}
 }
 

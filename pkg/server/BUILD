@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "api.go",
+        "options.go",
         "server.go",
     ],
     importpath = "k8s.io/identity/pkg/server",
@@ -17,6 +18,7 @@ go_library(
         "//pkg/registry/identity/identitydocument:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
+        "//vendor/github.com/spf13/pflag:go_default_library",
         "//vendor/k8s.io/api/authentication/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apimachinery/announced:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apimachinery/registered:go_default_library",

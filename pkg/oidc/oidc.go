@@ -191,8 +191,8 @@ func (m *OIDCMeta) InstallHandlers(mux muxer) error {
 func Authorizer() authorizer.Authorizer {
 	return authorizer.AuthorizerFunc(func(a authorizer.Attributes) (bool, string, error) {
 		for _, p := range []string{
-			"/oidc/oauth2/v0/certs",
-			"/oidc/.well-known/openid-configuration",
+			"/oauth2/v0/certs",
+			"/.well-known/openid-configuration",
 		} {
 			if a.GetPath() == p {
 				return true, "", nil
