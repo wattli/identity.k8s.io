@@ -6,23 +6,28 @@ import (
 	"sync"
 
 	api "k8s.io/identity/pkg/apis/idmgr"
+	idclient "k8s.io/identity/pkg/client/clientset/typed/identity/v1alpha1"
 )
 
-func NewServer() *Server {
+func NewServer(c idclient.IdentityDocumentInterface) *Server {
 	return &Server{
 		state: make(map[string]*Manager),
+		c:     c,
 	}
 }
 
 type Server struct {
 	sync.Mutex
 	state map[string]*Manager
+
+	c idclient.IdentityDocumentInterface
 }
 
 func (ms *Server) CreateIdentityVolume(ctx context.Context, in *api.CreateIdentityVolumeRequest) (*api.CreateIdentityVolumeResponse, error) {
 	vmgr := &Manager{
 		Dir:     in.GetMountPath(),
 		PodInfo: in.GetPodInfo(),
+		IdCli:   ms.c,
 	}
 	ms.Lock()
 	defer ms.Unlock()

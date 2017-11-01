@@ -54,7 +54,11 @@ func NewCommand(out, errOut io.Writer) *cobra.Command {
 		&cobra.Command{
 			Use: "get_token",
 			RunE: func(cmd *cobra.Command, args []string) error {
-				c.GetToken(ctx, &api.GetTokenRequest{Audience: []string{"foo"}})
+				resp, err := c.GetToken(ctx, &api.GetTokenRequest{Audience: []string{"foo"}})
+				if err != nil {
+					return err
+				}
+				cmd.OutOrStdout().Write(resp.Token)
 				return nil
 			},
 		},

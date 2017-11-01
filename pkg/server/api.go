@@ -102,12 +102,14 @@ func (c completedConfig) New() (*Server, error) {
 		GenericAPIServer: genericServer,
 	}
 
-	signer := jwt.NewSigner()
+	issuer := "https://35.202.74.156"
+
+	signer := jwt.NewSigner(issuer)
 
 	mux := s.GenericAPIServer.Handler.NonGoRestfulMux
 
 	oidcmeta := &oidc.OIDCMeta{
-		Issuer: "https://identity.k8s.io/oidc",
+		Issuer: issuer,
 		JWKs:   signer.JWKs(),
 	}
 	if err := oidcmeta.WriteDiscoveryDir("/tmp/oidc"); err != nil {

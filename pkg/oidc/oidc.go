@@ -168,8 +168,8 @@ type muxer interface {
 }
 
 func (m *OIDCMeta) InstallHandlers(mux muxer) error {
-	metapath := filepath.Join("/oidc", ".well-known/openid-configuration")
-	certspath := filepath.Join("/oidc", "oauth2/v0/certs")
+	metapath := "/.well-known/openid-configuration"
+	certspath := "/oauth2/v0/certs"
 	metab, err := json.MarshalIndent(Provider(m.Issuer), "", "  ")
 	if err != nil {
 		return fmt.Errorf("couldn't marshal oidc-configuration: %v", err)

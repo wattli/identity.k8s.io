@@ -6,9 +6,10 @@ go_library(
     importpath = "k8s.io/identity/pkg/workload",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/apis/identity/v1alpha1:go_default_library",
         "//pkg/apis/idmgr:go_default_library",
         "//pkg/apis/workload:go_default_library",
-        "//vendor/github.com/golang/glog:go_default_library",
+        "//pkg/client/clientset/typed/identity/v1alpha1:go_default_library",
         "//vendor/google.golang.org/grpc:go_default_library",
         "//vendor/google.golang.org/grpc/codes:go_default_library",
     ],

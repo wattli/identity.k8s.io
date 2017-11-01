@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//pkg/apis/idmgr:go_default_library",
         "//pkg/apis/workload:go_default_library",
+        "//pkg/client/clientset/typed/identity/v1alpha1:go_default_library",
         "//pkg/uds:go_default_library",
         "//pkg/util:go_default_library",
         "//pkg/workload:go_default_library",

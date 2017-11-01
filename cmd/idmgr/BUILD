@@ -9,12 +9,15 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/apis/idmgr:go_default_library",
+        "//pkg/client/clientset/typed/identity/v1alpha1:go_default_library",
         "//pkg/management:go_default_library",
         "//pkg/uds:go_default_library",
         "//pkg/util:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
         "//vendor/google.golang.org/grpc:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
     ],
 )
 

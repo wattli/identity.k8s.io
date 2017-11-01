@@ -17,7 +17,7 @@ type Signer struct {
 	alg    jose.SignatureAlgorithm
 }
 
-func NewSigner() *Signer {
+func NewSigner(issuer string) *Signer {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		panic(err)
@@ -29,7 +29,7 @@ func NewSigner() *Signer {
 	}
 	return &Signer{
 		key:    key,
-		issuer: "kubernetes-serviceaccount-authority",
+		issuer: issuer,
 		s:      sig,
 		alg:    alg,
 	}
@@ -39,12 +39,15 @@ func (s *Signer) Sign(c PublicClaims, p PrivateClaims) string {
 	var b [18]byte
 	rand.Read(b[:])
 
+	now := time.Now()
+
 	cl := jwt.Claims{
 		Subject:   c.Subject,
 		Audience:  jwt.Audience(c.Audience),
 		Issuer:    s.issuer,
-		Expiry:    jwt.NewNumericDate(time.Now().Add(30 * time.Minute)),
-		NotBefore: jwt.NewNumericDate(time.Now().Add(-30 * time.Minute)),
+		Expiry:    jwt.NewNumericDate(now.Add(30 * time.Minute)),
+		NotBefore: jwt.NewNumericDate(now.Add(-30 * time.Minute)),
+		IssuedAt:  jwt.NewNumericDate(now),
 		ID:        base64.URLEncoding.EncodeToString(b[:]),
 	}
 	raw, err := jwt.Signed(s.s).Claims(cl).Claims(p).CompactSerialize()

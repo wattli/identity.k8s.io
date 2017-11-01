@@ -7,6 +7,7 @@ import (
 
 	mapi "k8s.io/identity/pkg/apis/idmgr"
 	api "k8s.io/identity/pkg/apis/workload"
+	idclient "k8s.io/identity/pkg/client/clientset/typed/identity/v1alpha1"
 	"k8s.io/identity/pkg/uds"
 	"k8s.io/identity/pkg/util"
 	"k8s.io/identity/pkg/workload"
@@ -17,13 +18,16 @@ import (
 type Manager struct {
 	Dir     string
 	PodInfo *mapi.PodInfo
+	IdCli   idclient.IdentityDocumentInterface
 	stop    func() error
 }
 
 func (m *Manager) Start() error {
 	os.MkdirAll(m.Dir, 0744)
 	s, err := uds.New(filepath.Join(m.Dir, "id.sock"), func(s *grpc.Server) {
-		api.RegisterWorkloadServer(s, &workload.Server{})
+		api.RegisterWorkloadServer(s, &workload.Server{
+			IdCli: m.IdCli,
+		})
 	},
 		uds.LoggingInterceptor,
 		podInfoInterceptor(m.PodInfo),

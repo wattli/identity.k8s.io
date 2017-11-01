@@ -16,19 +16,24 @@ spec:
           image: gcr.io/mikedanese-k8s/idmgr:latest
           imagePullPolicy: Always
           volumeMounts:
-          - name: poddir
-            mountPath: /var/lib/kubelet/pods
+          - name: klet
+            mountPath: /var/lib/kubelet
           - name: tmpdir
             mountPath: /tmp
           - name: driver
             mountPath: /volumeplugin/k8s.io~identity
+          - name: pki
+            mountPath: /etc/srv/kubernetes/pki
       volumes:
-        - name: poddir
+        - name: klet
           hostPath:
-            path: /var/lib/kubelet/pods
+            path: /var/lib/kubelet
         - name: tmpdir
           hostPath:
             path: /tmp
         - name: driver
           hostPath:
             path: /tmp/volumeplugin/k8s.io~identity
+        - name: pki
+          hostPath:
+            path: /etc/srv/kubernetes/pki
