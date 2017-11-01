@@ -10,6 +10,7 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
+	"k8s.io/identity/pkg/oidc"
 )
 
 type ServerOptions struct {
@@ -84,6 +85,8 @@ func (o ServerOptions) Config() (*Config, error) {
 	if err := o.RecommendedOptions.ApplyTo(serverConfig); err != nil {
 		return nil, err
 	}
+
+	serverConfig.Authorizer = oidc.Authorizer()
 
 	config := &Config{
 		GenericConfig: serverConfig,

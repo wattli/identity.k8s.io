@@ -13,6 +13,7 @@ go_library(
         "//pkg/apis/identity/install:go_default_library",
         "//pkg/apis/identity/v1alpha1:go_default_library",
         "//pkg/jwt:go_default_library",
+        "//pkg/oidc:go_default_library",
         "//pkg/registry/identity/identitydocument:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",

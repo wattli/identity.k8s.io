@@ -14,6 +14,7 @@ type Signer struct {
 	key    *rsa.PrivateKey
 	issuer string
 	s      jose.Signer
+	alg    jose.SignatureAlgorithm
 }
 
 func NewSigner() *Signer {
@@ -21,7 +22,8 @@ func NewSigner() *Signer {
 	if err != nil {
 		panic(err)
 	}
-	sig, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.RS256, Key: key}, (&jose.SignerOptions{}).WithType("JWT"))
+	alg := jose.RS256
+	sig, err := jose.NewSigner(jose.SigningKey{Algorithm: alg, Key: key}, (&jose.SignerOptions{}).WithType("JWT"))
 	if err != nil {
 		panic(err)
 	}
@@ -29,6 +31,7 @@ func NewSigner() *Signer {
 		key:    key,
 		issuer: "kubernetes-serviceaccount-authority",
 		s:      sig,
+		alg:    alg,
 	}
 }
 
@@ -65,6 +68,17 @@ func (s *Signer) Verify(data string) (*PublicClaims, *PrivateClaims, error) {
 		return nil, nil, err
 	}
 	return &PublicClaims{Subject: cl.Subject, Audience: cl.Audience}, p, nil
+}
+
+func (s *Signer) JWKs() jose.JSONWebKeySet {
+	return jose.JSONWebKeySet{
+		Keys: []jose.JSONWebKey{
+			jose.JSONWebKey{
+				Key:       s.key,
+				Algorithm: string(s.alg),
+			},
+		},
+	}
 }
 
 type PublicClaims struct {

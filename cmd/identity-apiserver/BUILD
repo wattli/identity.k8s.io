@@ -1,5 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_build", "docker_push")
+load("@io_bazel_rules_docker//container:container.bzl", "container_image", "container_push")
 
 go_library(
     name = "go_default_library",
@@ -27,14 +27,16 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
-docker_build(
+container_image(
     name = "image",
+    base = "@busybox//image",
     entrypoint = ["/identity-apiserver"],
     files = [":identity-apiserver"],
 )
 
-docker_push(
+container_push(
     name = "push",
+    format = "Docker",
     image = ":image",
     registry = "gcr.io",
     repository = "mikedanese-k8s/identity-apiserver",

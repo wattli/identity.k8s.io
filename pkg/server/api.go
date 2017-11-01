@@ -23,6 +23,7 @@ import (
 	"k8s.io/identity/pkg/apis/identity/install"
 	"k8s.io/identity/pkg/apis/identity/v1alpha1"
 	"k8s.io/identity/pkg/jwt"
+	"k8s.io/identity/pkg/oidc"
 	identitydocumentstorage "k8s.io/identity/pkg/registry/identity/identitydocument"
 )
 
@@ -104,6 +105,18 @@ func (c completedConfig) New() (*Server, error) {
 	signer := jwt.NewSigner()
 
 	mux := s.GenericAPIServer.Handler.NonGoRestfulMux
+
+	oidcmeta := &oidc.OIDCMeta{
+		Issuer: "https://identity.k8s.io/oidc",
+		JWKs:   signer.JWKs(),
+	}
+	if err := oidcmeta.WriteDiscoveryDir("/tmp/oidc"); err != nil {
+		return nil, err
+	}
+	if err := oidcmeta.InstallHandlers(mux); err != nil {
+		return nil, err
+	}
+
 	mux.Handle("/webhook/authorize", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		glog.V(2).Infof("authorize")
 		w.WriteHeader(401)
@@ -150,9 +163,6 @@ func (c completedConfig) New() (*Server, error) {
 			return
 		}
 		w.WriteHeader(http.StatusUnauthorized)
-	}))
-	mux.Handle("/certs", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.WriteHeader(404)
 	}))
 
 	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(identity.GroupName, registry, Scheme, metav1.ParameterCodec, Codecs)
