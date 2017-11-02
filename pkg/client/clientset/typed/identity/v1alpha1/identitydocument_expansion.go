@@ -13,7 +13,7 @@ func (c *identityDocuments) Create(sar *identityapi.IdentityDocument, user strin
 	result = &identityapi.IdentityDocument{}
 	err = c.client.Post().
 		SetHeader(transport.ImpersonateUserHeader, user).
-		Resource("identitycocuments").
+		Resource("identitydocuments").
 		Body(sar).
 		Do().
 		Into(result)

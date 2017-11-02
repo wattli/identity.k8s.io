@@ -4,7 +4,7 @@ metadata:
   name: ubuntu
   namespace: default
 spec:
-  nodeName: k-4-minion-group-7mbb
+  nodeName: k-4-minion-group-c3xx
   containers:
   - name: tester
     command: ["sleep", "100000"]

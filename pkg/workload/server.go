@@ -26,7 +26,7 @@ func (w *Server) GetToken(ctx context.Context, req *api.GetTokenRequest) (*api.G
 		&identityapi.IdentityDocument{
 			Audience: req.Audience,
 		},
-		fmt.Sprintf("system:serviceaccount:%s:%s", info.Namespace, info.Name),
+		fmt.Sprintf("system:serviceaccount:%s:%s", info.Namespace, info.ServiceAccount),
 	)
 	if err != nil {
 		return nil, err
