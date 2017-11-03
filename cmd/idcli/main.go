@@ -50,18 +50,21 @@ func NewCommand(out, errOut io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Short: "Workload API cli",
 	}
-	cmd.AddCommand(
-		&cobra.Command{
-			Use: "get_token",
-			RunE: func(cmd *cobra.Command, args []string) error {
-				resp, err := c.GetToken(ctx, &api.GetTokenRequest{Audience: []string{"foo"}})
-				if err != nil {
-					return err
-				}
-				cmd.OutOrStdout().Write(resp.Token)
-				return nil
-			},
+
+	aud := "none"
+	tokenCmd := &cobra.Command{
+		Use: "get_token",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			resp, err := c.GetToken(ctx, &api.GetTokenRequest{Audience: []string{aud}})
+			if err != nil {
+				return err
+			}
+			cmd.OutOrStdout().Write(resp.Token)
+			return nil
 		},
-	)
+	}
+	tokenCmd.Flags().StringVar(&aud, "aud", aud, "audience of JWT")
+
+	cmd.AddCommand(tokenCmd)
 	return cmd
 }

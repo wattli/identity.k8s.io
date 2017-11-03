@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apiserver/pkg/authorization/union"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	"k8s.io/identity/pkg/oidc"
 )
@@ -60,7 +61,10 @@ func (o ServerOptions) Config() (*Config, error) {
 		return nil, err
 	}
 
-	serverConfig.Authorizer = oidc.Authorizer()
+	serverConfig.Authorizer = union.New(
+		oidc.Authorizer(),
+		serverConfig.Authorizer,
+	)
 
 	config := &Config{
 		GenericConfig: serverConfig,
